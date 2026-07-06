@@ -13,9 +13,7 @@
     "react-dom":    "^18.3.1",
     "recharts":     "^2.12.7",
     "axios":        "^1.7.2",
-    "lucide-react": "^0.383.0"
-  },
-  "devDependencies": {
+    "lucide-react": "^0.383.0",
     "@vitejs/plugin-react": "^4.3.1",
     "vite":                 "^5.3.1",
     "tailwindcss":          "^3.4.4",
