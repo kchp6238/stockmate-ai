@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: #080C14;
+    color: #C8D8EC;
+    font-family: 'DM Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar       { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: #0D1320; }
+  ::-webkit-scrollbar-thumb { background: #2A3A52; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
+}
+
+@layer components {
+  .card {
+    @apply bg-surface border border-border rounded-xl p-5;
+  }
+  .btn-primary {
+    @apply bg-accent hover:bg-blue-500 text-white font-display font-semibold
+           px-6 py-2.5 rounded-lg transition-all duration-200 disabled:opacity-40
+           disabled:cursor-not-allowed;
+  }
+  .btn-ghost {
+    @apply border border-border hover:border-accent hover:text-accent text-dim
+           px-4 py-2 rounded-lg transition-all duration-200 text-sm;
+  }
+  .tag-buy       { @apply bg-green/10 text-green   border border-green/20  px-3 py-1 rounded-full text-xs font-semibold; }
+  .tag-sell      { @apply bg-red/10   text-red     border border-red/20    px-3 py-1 rounded-full text-xs font-semibold; }
+  .tag-neutral   { @apply bg-dim/10   text-dim     border border-dim/20    px-3 py-1 rounded-full text-xs font-semibold; }
+  .tab-active    { @apply border-b-2 border-accent text-bright; }
+  .tab-inactive  { @apply border-b-2 border-transparent text-dim hover:text-text; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeUp { animation: fadeUp 0.4s ease forwards; }
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+.pulse-dot { animation: pulse-dot 1.4s ease infinite; }
