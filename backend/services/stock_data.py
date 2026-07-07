@@ -128,6 +128,7 @@ def get_stock_data(ticker: str) -> dict:
     종목 기본정보 + 기술적 지표 반환
     """
     ticker_yf = resolve_ticker(ticker)
+    is_kr = ticker_yf.endswith((".KS", ".KQ"))
     stock = yf.Ticker(ticker_yf)
 
     # OHLCV 1년치
@@ -189,16 +190,20 @@ def get_stock_data(ticker: str) -> dict:
 
     offset = len(df) - len(hist_df)
 
+    # 한국 주식: 정수 반올림 함수
+    def _round_price(v):
+        return round(v) if is_kr else round(v, 2)
+
     history = []
     for i, (idx, row) in enumerate(hist_df.iterrows()):
         j = offset + i
         def sv(s): return None if pd.isna(s.iloc[j]) else round(float(s.iloc[j]), 2)
         history.append({
             "date":   idx.strftime("%Y-%m-%d"),
-            "open":   round(float(row["Open"]),  2),
-            "high":   round(float(row["High"]),  2),
-            "low":    round(float(row["Low"]),   2),
-            "close":  round(float(row["Close"]), 2),
+            "open":   _round_price(float(row["Open"])),
+            "high":   _round_price(float(row["High"])),
+            "low":    _round_price(float(row["Low"])),
+            "close":  _round_price(float(row["Close"])),
             "volume": int(row["Volume"]),
             "sma20":  sv(sma20_arr),
             "sma50":  sv(sma50_arr),
@@ -217,6 +222,40 @@ def get_stock_data(ticker: str) -> dict:
         try: return round(float(v), 2) if v else None
         except: return None
 
+    # === 직접 계산: yfinance가 제공하지 않는 값 채우기 ===
+    trailing_pe = info_float("trailingPE")
+    forward_pe = info_float("forwardPE")
+    trailing_eps = info_float("trailingEps")
+    price_to_book = info_float("priceToBook")
+    book_value = info_float("bookValue")
+    market_cap_val = info.get("marketCap")
+    shares = info.get("sharesOutstanding")
+
+    # EPS → PER 계산
+    if not trailing_pe and trailing_eps and trailing_eps != 0:
+        trailing_pe = round(curr / trailing_eps, 2)
+
+    # PER → EPS 역산
+    if not trailing_eps and trailing_pe and trailing_pe != 0:
+        trailing_eps = round(curr / trailing_pe, 2)
+
+    # forwardPE → trailing PE 대체 (둘 다 없을 때)
+    if not trailing_pe and forward_pe:
+        trailing_pe = forward_pe
+
+    # bookValue → PBR 계산
+    if not price_to_book and book_value and book_value != 0:
+        price_to_book = round(curr / book_value, 2)
+
+    # 시가총액 계산
+    if not market_cap_val and shares:
+        market_cap_val = int(curr * shares)
+
+    # 한국 주식 가격 정수 처리
+    if is_kr:
+        curr = round(curr)
+        prev = round(prev)
+
     return {
         "ticker":       ticker_yf,
         "display_name": ticker,
@@ -224,26 +263,26 @@ def get_stock_data(ticker: str) -> dict:
         "sector":       info.get("sector", ""),
         "industry":     info.get("industry", ""),
         "country":      info.get("country", ""),
-        "currency":     info.get("currency", "KRW" if ticker_yf.endswith((".KS", ".KQ")) else "USD"),
+        "currency":     info.get("currency", "KRW" if is_kr else "USD"),
         "price": {
-            "current":    round(curr, 2),
-            "prev_close": round(prev, 2),
-            "change":     round(curr - prev, 2),
+            "current":    _round_price(curr),
+            "prev_close": _round_price(prev),
+            "change":     _round_price(curr - prev),
             "change_pct": round(chg, 2),
-            "open":       round(float(df["Open"].iloc[-1]), 2),
-            "high":       round(float(df["High"].iloc[-1]), 2),
-            "low":        round(float(df["Low"].iloc[-1]),  2),
+            "open":       _round_price(float(df["Open"].iloc[-1])),
+            "high":       _round_price(float(df["High"].iloc[-1])),
+            "low":        _round_price(float(df["Low"].iloc[-1])),
             "volume":     int(df["Volume"].iloc[-1]),
             "avg_volume": info_float("averageVolume"),
-            "high_52w":   round(float(close.tail(252).max()), 2),
-            "low_52w":    round(float(close.tail(252).min()), 2),
-            "market_cap": info.get("marketCap"),
+            "high_52w":   _round_price(float(close.tail(252).max())),
+            "low_52w":    _round_price(float(close.tail(252).min())),
+            "market_cap": market_cap_val,
         },
         "fundamentals": {
-            "pe_ratio":       info_float("trailingPE"),
-            "forward_pe":     info_float("forwardPE"),
-            "pb_ratio":       info_float("priceToBook"),
-            "eps":            info_float("trailingEps"),
+            "pe_ratio":       trailing_pe,
+            "forward_pe":     forward_pe,
+            "pb_ratio":       price_to_book,
+            "eps":            trailing_eps,
             "dividend_yield": info_float("dividendYield"),
             "beta":           info_float("beta"),
             "profit_margin":  info_float("profitMargins"),
