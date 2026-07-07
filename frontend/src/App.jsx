@@ -96,7 +96,7 @@ const handleSearch = async (ticker) => {
                 <FundamentalsGrid
                   price={data.price} fundamentals={data.fundamentals}
                   indicators={data.indicators} currency={data.currency} />
-                <PriceChart history={data.history} />
+                <PriceChart history={data.history} currency={data.currency} />
                 {/* 기본 로드 후 AI 요약도 보여줌 */}
                 {isFullLoaded && data.analysis && (
                   <AIReport analysis={data.analysis} />
@@ -110,14 +110,15 @@ const handleSearch = async (ticker) => {
             {/* ── 차트 탭 ──────────────────────────────── */}
             {tab === 'charts' && (
               <div className="space-y-5">
-                <PriceChart    history={data.history} />
-                <VolumeChart   history={data.history} />
-                <RsiChart      history={data.history} />
-                <MacdChart     history={data.history} />
+                <PriceChart    history={data.history} currency={data.currency} />
+                <VolumeChart   history={data.history} currency={data.currency} />
+                <RsiChart      history={data.history} currency={data.currency} />
+                <MacdChart     history={data.history} currency={data.currency} />
                 {isFullLoaded && data.forecast?.forecast?.length > 0 && (
                   <ForecastChart
                     forecast={data.forecast.forecast}
-                    currentPrice={data.forecast.current_price} />
+                    currentPrice={data.forecast.current_price}
+                    currency={data.currency} />
                 )}
                 {loading && !isFullLoaded && (
                   <div className="card text-center py-8 text-dim text-sm">

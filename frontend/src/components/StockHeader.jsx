@@ -1,4 +1,4 @@
-import { Star, TrendingUp, TrendingDown } from 'lucide-react'
+import { Star, TrendingUp, TrendingDown, Target } from 'lucide-react'
 import { fmt } from '../utils/format'
 
 export default function StockHeader({ data, inWatchlist, onToggleWatchlist }) {
@@ -6,6 +6,11 @@ export default function StockHeader({ data, inWatchlist, onToggleWatchlist }) {
   const sig    = fmt.signal(data.indicators?.overall_signal)
   const isUp   = p.change_pct >= 0
   const cur    = data.currency || 'USD'
+
+  // 예측 데이터
+  const fc = data.forecast || {}
+  const hasForecast = fc.predicted_price != null && fc.change_pct != null
+  const fcUp = fc.change_pct >= 0
 
   return (
     <div className="card animate-fadeUp">
@@ -40,12 +45,35 @@ export default function StockHeader({ data, inWatchlist, onToggleWatchlist }) {
         </div>
       </div>
 
+      {/* 예측 가격 배너 */}
+      {hasForecast && (
+        <div className={`mt-4 p-4 rounded-xl border ${fcUp
+          ? 'bg-green/5 border-green/20'
+          : 'bg-red/5 border-red/20'}`}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Target className={`w-5 h-5 ${fcUp ? 'text-green' : 'text-red'}`} />
+              <span className="text-sm font-display text-dim">30일 AI 예측 목표가</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className={`font-display text-2xl font-bold ${fcUp ? 'text-green' : 'text-red'}`}>
+                {fmt.price(fc.predicted_price, cur)}
+              </span>
+              <span className={`font-mono text-sm font-semibold px-3 py-1 rounded-lg ${fcUp
+                ? 'bg-green/10 text-green'
+                : 'bg-red/10 text-red'}`}>
+                {fcUp ? '▲' : '▼'} {fc.change_pct > 0 ? '+' : ''}{fc.change_pct?.toFixed(2)}%
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 하단: 지표 바 + 신호 + 즐겨찾기 */}
       <div className="mt-4 pt-4 border-t border-border flex flex-wrap items-center gap-4">
         <span className={sig.cls}>{sig.label}</span>
 
         <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-dim">
-          {/* ✅ 수정: 시가총액에 통화(cur) 전달 — KRW 종목은 ₩ 표시 */}
           <span>시가총액 <b className="text-text">{fmt.cap(p.market_cap, cur)}</b></span>
           <span>거래량 <b className="text-text">{fmt.num(p.volume)}</b></span>
           <span>52주 고 <b className="text-green">{fmt.price(p.high_52w, cur)}</b></span>
@@ -53,7 +81,6 @@ export default function StockHeader({ data, inWatchlist, onToggleWatchlist }) {
           {data.fundamentals?.pe_ratio && (
             <span>PER <b className="text-text">{data.fundamentals.pe_ratio}</b></span>
           )}
-          {/* ✅ 수정: yfinance 1.x는 배당률을 이미 % 단위로 반환 (×100 제거) */}
           {data.fundamentals?.dividend_yield != null && (
             <span>배당 <b className="text-amber">{fmt.divYield(data.fundamentals.dividend_yield)}</b></span>
           )}
