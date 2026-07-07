@@ -22,7 +22,10 @@ export default function App() {
   const { list, recent, load: loadWL, add, remove }   = useWatchlist()
 
   useEffect(() => { loadWL() }, [loadWL])
-
+const handleSearch = async (ticker) => {
+    await search(ticker)
+    loadWL()
+  }
   const inWatchlist = list.includes(data?.ticker || '')
   const toggleWL    = () => (inWatchlist ? remove : add)(data?.ticker)
 
@@ -49,7 +52,7 @@ export default function App() {
 
         {/* ── 검색 ───────────────────────────────────────── */}
         <section className="card animate-fadeUp">
-          <SearchBar onSearch={search} watchlist={list} recent={recent} />
+         <SearchBar onSearch={handleSearch} watchlist={list} recent={recent} />
         </section>
 
         {/* ── 에러 ───────────────────────────────────────── */}
