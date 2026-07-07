@@ -6,10 +6,10 @@ export const fmt = {
     const sym = CUR_SYMBOL[cur] || '$'
     const digits = (cur === 'KRW' || cur === 'JPY') ? 0 : 2
     return `${sym}${Number(v).toLocaleString(undefined, { minimumFractionDigits: digits, maximumFractionDigits: digits })}`
+  },
   pct: (v) => v == null ? 'N/A' : `${v > 0 ? '+' : ''}${Number(v).toFixed(2)}%`,
   num: (v) => v == null ? 'N/A' : Number(v).toLocaleString(),
 
-  // ✅ 수정: 통화에 맞는 기호 사용 ($ / ₩ 등)
   cap: (v, cur = 'USD') => {
     if (v == null) return 'N/A'
     const sym = CUR_SYMBOL[cur] || '$'
@@ -19,8 +19,6 @@ export const fmt = {
     return `${sym}${v.toLocaleString()}`
   },
 
-  // ✅ 추가: 배당수익률 - yfinance 1.x는 이미 % 단위 값을 반환함 (예: 0.58 → 0.58%)
-  // 0~100 사이 숫자를 그대로 %로 표시 (기존처럼 *100 하지 않음)
   divYield: (v) => {
     if (v == null) return 'N/A'
     return `${Number(v).toFixed(2)}%`
