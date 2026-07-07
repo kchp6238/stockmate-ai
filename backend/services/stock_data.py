@@ -224,7 +224,7 @@ def get_stock_data(ticker: str) -> dict:
         "sector":       info.get("sector", ""),
         "industry":     info.get("industry", ""),
         "country":      info.get("country", ""),
-        "currency":     info.get("currency", "USD"),
+        "currency":     info.get("currency", "KRW" if ticker_yf.endswith((".KS", ".KQ")) else "USD"),
         "price": {
             "current":    round(curr, 2),
             "prev_close": round(prev, 2),

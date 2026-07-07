@@ -4,8 +4,8 @@ export const fmt = {
   price: (v, cur = 'USD') => {
     if (v == null) return 'N/A'
     const sym = CUR_SYMBOL[cur] || '$'
-    return `${sym}${Number(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-  },
+    const digits = (cur === 'KRW' || cur === 'JPY') ? 0 : 2
+    return `${sym}${Number(v).toLocaleString(undefined, { minimumFractionDigits: digits, maximumFractionDigits: digits })}`
   pct: (v) => v == null ? 'N/A' : `${v > 0 ? '+' : ''}${Number(v).toFixed(2)}%`,
   num: (v) => v == null ? 'N/A' : Number(v).toLocaleString(),
 
