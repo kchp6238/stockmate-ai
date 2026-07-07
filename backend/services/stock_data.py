@@ -231,6 +231,10 @@ def get_stock_data(ticker: str) -> dict:
     market_cap_val = info.get("marketCap")
     shares = info.get("sharesOutstanding")
 
+    # forwardPE → trailing PE 대체 (둘 다 없을 때)
+    if not trailing_pe and forward_pe:
+        trailing_pe = forward_pe
+
     # EPS → PER 계산
     if not trailing_pe and trailing_eps and trailing_eps != 0:
         trailing_pe = round(curr / trailing_eps, 2)
@@ -238,10 +242,6 @@ def get_stock_data(ticker: str) -> dict:
     # PER → EPS 역산
     if not trailing_eps and trailing_pe and trailing_pe != 0:
         trailing_eps = round(curr / trailing_pe, 2)
-
-    # forwardPE → trailing PE 대체 (둘 다 없을 때)
-    if not trailing_pe and forward_pe:
-        trailing_pe = forward_pe
 
     # bookValue → PBR 계산
     if not price_to_book and book_value and book_value != 0:
